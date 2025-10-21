@@ -1,7 +1,9 @@
 from rest_framework import viewsets, permissions, filters
+from rest_framework.permissions import IsAuthenticated
+
 from .models import Stadium, StadiumImage
 from .serializers import StadiumSerializer, StadiumImageSerializer
-from core.permissions import IsOwnerOrReadOnly
+from core.permissions import IsAdminOrReadOnly
 from django_filters.rest_framework import DjangoFilterBackend
 from .filters import StadiumFilter
 
@@ -11,10 +13,7 @@ from .filters import StadiumFilter
 class StadiumViewSet(viewsets.ModelViewSet):
     queryset = Stadium.objects.all()
     serializer_class = StadiumSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
-    def perform_create(self, serializer):
-        serializer.save(owner=self.request.user)
-
+    permission_classes = [IsAuthenticated, IsAdminOrReadOnly]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_class = StadiumFilter
 

@@ -5,7 +5,7 @@ from core.permissions import IsOwnerOrAdmin
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.views import APIView
 from django.core.cache import cache
 import uuid
@@ -18,11 +18,19 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UsersSerializer
     permission_classes = [IsOwnerOrAdmin]
 
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_staff or user.is_superuser:
+            return User.objects.all()
+        if user.is_authenticated:
+            return User.objects.filter(id=user.id)
+        return User.objects.none()
 
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = RegisterSerializer
+    permission_classes = [AllowAny]
 
     def create(self, request, *args, **kwargs):
         key = request.data.get('key')
@@ -80,14 +88,6 @@ class VerifyOTPView(APIView):
         cache.set(f"verified_{key}", contact, timeout=900)
         cache.delete(f"otp_{contact}")
         return Response({"message": "OTP подтвержден", "key": key}, status=status.HTTP_200_OK)
-
-
-
-
-
-
-
-
 
 
 

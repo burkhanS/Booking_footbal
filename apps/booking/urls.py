@@ -4,4 +4,10 @@ from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
 router.register(r'', BookingViewSet)
-urlpatterns = router.urls
+
+
+urlpatterns = [
+    path('stats/', BookingStatsView.as_view(), name='booking_stats')
+]
+
+urlpatterns += router.urls
